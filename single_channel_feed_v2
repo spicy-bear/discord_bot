@@ -1,0 +1,213 @@
+import time
+import feedparser
+import discord
+
+url_strings = [
+#cyber 
+    'https://feeds.feedburner.com/TheHackersNews',
+    'https://www.bleepingcomputer.com/feed/',
+    'https://gbhackers.com/feed/',
+    'https://grahamcluley.com/feed/',
+    'https://threatpost.com/feed/',
+    'https://krebsonsecurity.com/feed/',
+    'https://www.darkreading.com/rss.xml',
+    'https://feeds.feedburner.com/eset/blog',
+    'https://www.darktrace.com/blog/index.xml',
+    'https://www.security.nl/rss/headlines.xml',
+    'https://asec.ahnlab.com/ko/feed',
+    'https://malware.news/latest.rss',
+    'https://news.ycombinator.com/rss',
+    'https://feeds.feedburner.com/TheHackersNews',
+    'https://thedfirreport.com/feed',
+    'https://api.msrc.microsoft.com/update-guide/rss',
+    'http://feeds.trendmicro.com/Anti-MalwareBlog',
+    'https://securelist.com/feed/',
+    'http://feeds.feedburner.com/Unit42',
+    'http://feeds.feedburner.com/feedburner/Talos',
+    'https://www.welivesecurity.com/category/cybercrime,malware,hacking,android-2,mobile-security,windows,banking/feed/',
+    'https://www.proofpoint.com/us/threat-insight-blog.xml',
+    'http://www.fireeye.com/blog/feed',
+    'https://blog.malwarebytes.com/feed/',
+    'https://isc.sans.edu/rssfeed_full.xml',
+    'https://content.connect.symantec.com/rss/v1/blogs/rss.xml',
+    'https://blog.dynamoo.com/feeds/posts/default?alt=rss',
+    'https://blog.alyac.co.kr',
+    'https://broadanalysis.com/feed/',
+    'https://research.checkpoint.com/feed/',
+    'https://bartblaze.blogspot.com/feeds/posts/default?alt=rss',
+    'https://blog.netlab.360.com/rss/',
+    'http://feeds.feedburner.com/fortinet/blog/threat-research',
+    'https://www.mcafee.com/blogs/other-blogs/mcafee-labs/',
+    'https://intezer.com/feed/',
+    'https://www.clearskysec.com/feed/',
+    'https://blog.yoroi.company/feed/',
+    'https://www.cybereason.com/blog/tag/research',
+    'https://www.secureworks.com/rss?feed=blog&category=threats-and-defenses',
+    'https://www.riskiq.com/blog/category/labs/',
+    'https://citizenlab.ca/feed/',
+    'https://www.trustwave.com/en-us/rss/spiderlabs-blog/',
+    'https://blog.sucuri.net/feed',
+    'https://www.anomali.com/blog/category/research',
+    'https://blogs.blackberry.com/en/category/research-and-intelligence',
+    'https://nakedsecurity.sophos.com/feed/',
+    'https://s.tencent.com/research/report/',
+    'https://blog.telsy.com/feed/',
+    'https://www.carbonblack.com/blog/',
+    'https://labs.bitdefender.com/blog/',
+    'https://www.crowdstrike.com/blog/category/threat-intel-research/',
+    'https://www.microsoft.com/security/blog/microsoft-security-intelligence/',
+    'https://www.volexity.com/blog/',
+    'https://threatconnect.com/blog/?fwp_blog_topic=threat-research',
+    'https://blog.morphisec.com/rss.xml',
+    'https://threatrecon.nshc.net/feed/',
+    'https://www.recordedfuture.com/feed/',
+    'https://blog.avast.com/rss.xml',
+    'https://www.vkremez.com/feeds/posts/default?alt=rss',
+    'https://norfolkinfosec.com/feed/',
+    'https://www.binarydefense.com/feed/',
+    'https://www.sentinelone.com/labs/feed/',
+    'https://www.sentinelone.com/blog/feed/',
+    'https://blog.prevailion.com/feeds/posts/default?alt=rss',
+    'https://symantec-enterprise-blogs.security.com/blogs/rss/v1/blogs/rss.xml',
+    'https://thedfirreport.com/feed/',
+    'http://www.csis.dk/rss/en/',
+    'http://malwaremustdie.blogspot.com/feeds/posts/default',
+    'https://www.team-cymru.org/News/index.rss',
+    'http://security.paloaltonetworks.com/rss.xml',
+    'https://redcanary.com/blog/rss',
+    'https://thedfirreport.com/2023/feed',
+    'https://duo.com/decipher/feed',
+    'https://inthewild.io/feed',
+    'https://research.openanalysis.net/feed.xml',
+    'https://cybersecurity.att.com/blogs',
+
+#cve
+    'https://access.redhat.com/hyrda/rest/securitydata/cve',
+    'https://nitter.net/cvenew',
+
+#status
+    'https://status.alienvault.cloud/history.rss',
+
+#government and alerts
+    'https://us-cert.cisa.gov/ncas/analysis-reports.xml',
+    'https://us-cert.cisa.gov/ncas/alerts.xml',
+    'https://www.cisa.gov/uscert/ncas/alerts.xml',
+    'https://www.ncsc.gov.uk/api/1/services/v1/all-rss-feed',
+    'https://www.cisa.gov/uscert/ncas/alerts.xml',
+    'https://www.ncsc.gov.uk/api/1/services/v1/report-rss-feed.xml',
+    'https://www.cisecurity.org/feed/advisories',
+    'https://www.cert.pl/feed/',
+    'https://nitter.net/_CERT_UA/rss',
+    'https://blogs.jpcert.or.jp/en/',
+
+#twitter 
+    'https://nitter.net/pr0xylife/rss',
+    'https://nitter.net/ptrace/rss',
+    'https://nitter.net/bad-packets/rss',
+    'https://nitter.net/netblocks/rss',
+    'https://nitter.net/0xtoxin/rss',
+    'https://nitter.net/vxunderground/rss',
+
+#news 
+    'https://nitter.net/zerohedge/rss',
+    'https://nitter.net/Fxhedgers/rss',
+    'https://nitter.net/eWhispers/rss',
+    'https://nitter.net/disclosetv/rss',
+    'https://nitter.net/Breaking911/rss',
+    'https://nitter.net/Deltaone/rss',
+    'https://nitter.net/michaeljburry/rss',
+
+#crypto 
+    'https://dailyhodl.com/feed',
+    'https://insights.glassnode.com/rss',
+
+#osint
+    'https://theaviationist.com/feed',
+    'https://www.bellingcat.com/feed',
+    'https://knowmad-osint.com/feed',
+    'https://inteltechniques.com/blog/feed',
+    'https://politepol.com/fd/IXN39UufFHoC',
+    'https://politepol.com/fd/4yT8VPaxrAIM',
+
+#money 
+    'https://fedguy.com/feed',
+    'https://www.bls.gov/feed/cpi_latest.rss',
+
+#weather
+    'https://nitter.net/NWS/rss',
+    'https://nitter.net/NWSSWPC/rss',
+    'https://nitter.net/_SpaceWeather_/rss',
+    'https://nitter.net/CIRA_CSU/rss',
+    'https://nitter.net/SSSWeather/rss'
+
+]
+
+displayed_titles = []
+all_items = []  # Initialize all_items here
+
+TOKEN = "discord_token"
+CHANNEL_ID = "the_channel_id"
+
+intents = discord.Intents.default()
+intents.typing = False
+intents.presences = False
+
+client = discord.Client(intents=intents)
+
+@client.event
+async def on_ready():
+    print("Connected to Discord!")
+    while True:
+        print("Loading RSS feeds... please wait")
+        for url in url_strings:
+            try:
+                feed = feedparser.parse(url)
+                items = feed.entries
+                for item in items:
+                    if 'published_parsed' not in item:
+                        continue
+
+                    pub_date = time.strftime("%d, %b %Y | %H:%M", time.gmtime(time.mktime(item.published_parsed)))
+
+                    if pub_date > time.strftime("%d, %b %Y | %H:%M", time.gmtime(time.time() - 12 * 3600)):
+                        all_items.append({
+                            'title': item.title,
+                            'link': item.link,
+                            'description': item.description,
+                            'pub_date': pub_date
+                        })
+            except Exception:
+                continue
+
+        all_items.sort(key=lambda x: x['title'])
+
+        counter = 1
+        for item in all_items:
+            title = item['title']
+            link = item['link']
+            description = item['description']
+            pub_date = item['pub_date']
+
+            if title in displayed_titles:
+                continue
+
+            message = (
+                #f"{title}\n"
+                #f"{description}\n"
+                f"{link}\n"
+                #f"Details:\n"
+                #f"Source: {source}\n"
+                #f"Date: {pub_date}"
+            )
+
+            channel = client.get_channel(int(CHANNEL_ID))
+            await channel.send(message)
+
+            displayed_titles.append(title)
+            counter += 1
+
+            time.sleep(3)
+
+        all_items.clear()  # Clear all_items after each iteration
+
+client.run(TOKEN)
